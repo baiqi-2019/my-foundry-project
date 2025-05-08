@@ -1,0 +1,24 @@
+my-foundry-project % forge test --match-contract NFTMarketTest -vv
+[⠊] Compiling...
+[⠑] Compiling 1 files with Solc 0.8.25
+[⠘] Solc 0.8.25 finished in 628.68ms
+Compiler run successful!
+
+Ran 14 tests for test/NFTMarket.t.sol:NFTMarketTest
+[PASS] testBuyNFTInsufficientBalance() (gas: 221711)
+[PASS] testBuyNFTSuccess() (gas: 240754)
+[PASS] testBuyNFTTwice() (gas: 227758)
+[PASS] testBuyNFTWithCallbackIncorrectAmount() (gas: 205694)
+[PASS] testBuyNFTWithCallbackSuccess() (gas: 240618)
+[PASS] testBuySelfNFT() (gas: 229387)
+[PASS] testFuzz_ListAndBuyNFT(uint256,address) (runs: 256, μ: 263060, ~: 263185)
+[PASS] testInvariant_NoTokenBalance() (gas: 480262)
+[PASS] testListNFTByApprovedForToken() (gas: 202705)
+[PASS] testListNFTByApprovedOperator() (gas: 198922)
+[PASS] testListNFTFailureNotOwner() (gas: 34360)
+[PASS] testListNFTFailureZeroAddress() (gas: 18135)
+[PASS] testListNFTFailureZeroPrice() (gas: 18306)
+[PASS] testListNFTSuccess() (gas: 177460)
+Suite result: ok. 14 passed; 0 failed; 0 skipped; finished in 44.38ms (48.81ms CPU time)
+
+Ran 1 test suite in 301.06ms (44.38ms CPU time): 14 tests passed, 0 failed, 0 skipped (14 total tests)

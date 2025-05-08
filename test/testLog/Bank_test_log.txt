@@ -1,0 +1,11 @@
+my-foundry-project % forge test --match-contract BankTest -vv     
+[⠊] Compiling...
+No files changed, compilation skipped
+
+Ran 3 tests for test/Bank.t.sol:BankTest
+[PASS] testDeposit() (gas: 86554)
+[PASS] testTopDepositors() (gas: 296990)
+[PASS] testWithdrawOnlyAdmin() (gas: 83676)
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 8.32ms (2.65ms CPU time)
+
+Ran 1 test suite in 292.35ms (8.32ms CPU time): 3 tests passed, 0 failed, 0 skipped (3 total tests)
