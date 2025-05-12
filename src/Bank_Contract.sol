@@ -1,6 +1,6 @@
 pragma solidity ^0.8.9;
 contract Bank {
-    address public immutable admin; 
+    address public admin; 
     mapping(address => uint) public deposits;
     
     // 存储存款金额前3名的地址
@@ -8,9 +8,21 @@ contract Bank {
 
     uint8 private constant TOP_COUNT = 3;
     
+    // 管理员变更事件
+    event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
+    
     constructor() {
         //构造函数执行的时候指定部署合约的人就是管理员
         admin = msg.sender;
+    }
+    
+    // 设置新管理员，只有当前管理员可以调用
+    function setAdmin(address newAdmin) external {
+        require(msg.sender == admin, "Only admin can set new admin");
+        require(newAdmin != address(0), "New admin cannot be zero address");
+        
+        emit AdminChanged(admin, newAdmin);
+        admin = newAdmin;
     }
     
     // 接收ETH并记录存款
