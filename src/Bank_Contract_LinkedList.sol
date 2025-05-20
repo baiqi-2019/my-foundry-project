@@ -9,17 +9,15 @@ contract Bank {
     struct Node {
         address user;
         uint amount;
-        uint next; // 下一个节点的索引
+        address next; // 下一个节点的地址
     }
     
-    // 链表存储
-    Node[] public topDepositors;
-    uint public constant MAX_TOP_USERS = 10; // 最多保存前10名
-    uint public head; // 链表头部索引
+    // 使用mapping存储链表节点
+    mapping(address => Node) public nodes;
+    address public head; // 链表头部地址
+    address public tail; // 链表尾部地址
     uint public size; // 当前链表大小
-    
-    // 用户在链表中的位置映射
-    mapping(address => uint) public userIndex; // 0表示不在链表中，其他值表示在topDepositors中的索引+1
+    uint public constant MAX_TOP_USERS = 10; // 最多保存前10名
     
     // 事件
     event AdminChanged(address indexed oldAdmin, address indexed newAdmin);
@@ -29,9 +27,9 @@ contract Bank {
     constructor() {
         admin = msg.sender;
         
-        // 初始化链表，添加一个哨兵节点
-        topDepositors.push(Node(address(0), 0, 0));
-        head = 0;
+        // 初始化链表，使用零地址作为哨兵节点
+        head = address(0);
+        tail = address(0);
         size = 0;
     }
     
@@ -68,20 +66,32 @@ contract Bank {
     
     // 更新前10名存款人
     function updateTopDepositors(address user, uint amount) internal {
-        uint userPos = userIndex[user];
+        // 检查用户是否已在链表中
+        bool isInList = false;
+        address current = head;
+        address prev = address(0);
         
-        if (userPos > 0) {
+        while (current != address(0)) {
+            if (current == user) {
+                isInList = true;
+                break;
+            }
+            prev = current;
+            current = nodes[current].next;
+        }
+        
+        if (isInList) {
             // 用户已在链表中，更新金额并调整位置
-            topDepositors[userPos - 1].amount = amount;
-            _reorderNode(userPos - 1);
+            nodes[user].amount = amount;
+            _reorderNode(user, prev);
         } else {
             // 用户不在链表中
             if (size < MAX_TOP_USERS) {
                 // 链表未满，直接添加
                 _addNode(user, amount);
-            } else if (amount > topDepositors[topDepositors[head].next].amount) {
+            } else if (head != address(0) && amount > nodes[tail].amount) {
                 // 链表已满，但用户存款大于链表中最小的存款，替换最小的
-                _removeLastNode();
+                _removeNode(tail);
                 _addNode(user, amount);
             }
         }
@@ -90,70 +100,123 @@ contract Bank {
     // 添加新节点到链表
     function _addNode(address user, uint amount) internal {
         // 创建新节点
-        topDepositors.push(Node(user, amount, 0));
-        uint newNodeIndex = topDepositors.length - 1;
+        nodes[user] = Node(user, amount, address(0));
         
-        // 记录用户在链表中的位置
-        userIndex[user] = newNodeIndex + 1;
+        // 如果链表为空
+        if (head == address(0)) {
+            head = user;
+            tail = user;
+            size = 1;
+            return;
+        }
         
-        // 找到合适的位置插入
-        uint current = head;
-        while (topDepositors[current].next != 0 && 
-               topDepositors[topDepositors[current].next].amount > amount) {
-            current = topDepositors[current].next;
+        // 找到合适的位置插入（按存款金额从大到小排序）
+        address current = head;
+        address prev = address(0);
+        
+        while (current != address(0) && nodes[current].amount >= amount) {
+            prev = current;
+            current = nodes[current].next;
         }
         
         // 插入节点
-        topDepositors[newNodeIndex].next = topDepositors[current].next;
-        topDepositors[current].next = newNodeIndex;
+        if (prev == address(0)) {
+            // 插入到链表头部
+            nodes[user].next = head;
+            head = user;
+        } else {
+            // 插入到中间或尾部
+            nodes[user].next = nodes[prev].next;
+            nodes[prev].next = user;
+        }
+        
+        // 更新尾部指针
+        if (nodes[user].next == address(0)) {
+            tail = user;
+        }
         
         size++;
     }
     
     // 重新排序节点
-    function _reorderNode(uint nodeIndex) internal {
-        Node memory node = topDepositors[nodeIndex];
+    function _reorderNode(address user, address prevNode) internal {
+        // 如果只有一个节点，不需要重排
+        if (size <= 1) return;
         
-        // 先从链表中移除该节点
-        uint current = head;
-        while (topDepositors[current].next != nodeIndex && topDepositors[current].next != 0) {
-            current = topDepositors[current].next;
+        // 从链表中移除节点
+        if (prevNode == address(0)) {
+            // 节点是头部
+            head = nodes[user].next;
+        } else {
+            nodes[prevNode].next = nodes[user].next;
         }
         
-        if (topDepositors[current].next == nodeIndex) {
-            topDepositors[current].next = topDepositors[nodeIndex].next;
-            
-            // 重新找到合适的位置插入
-            current = head;
-            while (topDepositors[current].next != 0 && 
-                   topDepositors[topDepositors[current].next].amount > node.amount) {
-                current = topDepositors[current].next;
-            }
-            
-            // 插入节点
-            topDepositors[nodeIndex].next = topDepositors[current].next;
-            topDepositors[current].next = nodeIndex;
+        // 如果节点是尾部，更新尾部指针
+        if (tail == user) {
+            tail = prevNode == address(0) ? head : prevNode;
+        }
+        
+        // 重新插入节点
+        nodes[user].next = address(0);
+        
+        // 找到合适的位置重新插入
+        address current = head;
+        address prev = address(0);
+        
+        while (current != address(0) && nodes[current].amount >= nodes[user].amount && current != user) {
+            prev = current;
+            current = nodes[current].next;
+        }
+        
+        // 重新插入节点
+        if (prev == address(0)) {
+            // 插入到链表头部
+            nodes[user].next = head;
+            head = user;
+        } else {
+            // 插入到中间或尾部
+            nodes[user].next = nodes[prev].next;
+            nodes[prev].next = user;
+        }
+        
+        // 更新尾部指针
+        if (nodes[user].next == address(0)) {
+            tail = user;
         }
     }
     
-    // 移除链表中最后一个节点（存款金额最小的）
-    function _removeLastNode() internal {
+    // 从链表中移除节点
+    function _removeNode(address user) internal {
         if (size == 0) return;
         
-        uint current = head;
-        uint previous = head;
+        address current = head;
+        address prev = address(0);
         
-        // 找到倒数第二个节点
-        while (topDepositors[current].next != 0) {
-            previous = current;
-            current = topDepositors[current].next;
+        // 找到要移除的节点
+        while (current != address(0) && current != user) {
+            prev = current;
+            current = nodes[current].next;
         }
         
-        // 移除最后一个节点
-        address lastUser = topDepositors[current].user;
-        userIndex[lastUser] = 0; // 标记用户不在链表中
-        topDepositors[previous].next = 0;
-        size--;
+        // 如果找到了节点
+        if (current == user) {
+            // 移除节点
+            if (prev == address(0)) {
+                // 节点是头部
+                head = nodes[user].next;
+            } else {
+                nodes[prev].next = nodes[user].next;
+            }
+            
+            // 如果节点是尾部，更新尾部指针
+            if (tail == user) {
+                tail = prev == address(0) ? head : prev;
+            }
+            
+            // 清除节点数据
+            delete nodes[user];
+            size--;
+        }
     }
     
     // 获取前10名存款人及其存款金额
@@ -161,11 +224,11 @@ contract Bank {
         address[] memory users = new address[](size);
         uint[] memory amounts = new uint[](size);
         
-        uint current = topDepositors[head].next;
-        for (uint i = 0; i < size && current != 0; i++) {
-            users[i] = topDepositors[current].user;
-            amounts[i] = topDepositors[current].amount;
-            current = topDepositors[current].next;
+        address current = head;
+        for (uint i = 0; i < size && current != address(0); i++) {
+            users[i] = current;
+            amounts[i] = nodes[current].amount;
+            current = nodes[current].next;
         }
         
         return (users, amounts);
