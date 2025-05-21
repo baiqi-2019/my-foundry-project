@@ -2,6 +2,16 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+ast = true
+via_ir = true
+optimizer = true
+optimizer_runs = 200
+
+[profile.optimized]
+via_ir = true
+optimizer = true
+optimizer_runs = 1000
+ir_optimized = true
 
 [etherscan]
 sepolia = { key = "${ETHERSCAN_API_KEY}" }
