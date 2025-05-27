@@ -1,95 +1,177 @@
-# Bank 自动化提款项目
+# 闪电兑换项目
 
-该项目使用 Chainlink Automation 实现对 Bank 合约的自动化监控和提款功能。当 Bank 合约的余额超过设定阈值时，自动将一半的资金转移到指定的地址。
+## 项目概述
 
-## 组件说明
+本项目在 Sepolia 测试网上实现了完整的闪电兑换（Flash Swap）功能，通过部署两个独立的 Uniswap V2 系统来创造套利机会。
 
-1. **Bank 合约** - 已部署在地址 `0xD851029100eB595Fe2150E26c7ea6Cba80012572`，提供存款和提款功能。
-2. **BankAutomation 合约** - 实现 Chainlink Automation 接口，监控 Bank 合约的余额并在适当时机自动执行提款操作。
+## 核心特性
 
-## 工作流程
+### ✅ 两个独立的 Uniswap V2 系统
+- **System A**: 独立的 Factory + Router + Pool
+- **System B**: 另一个独立的 Factory + Router + Pool
+- **价差机制**: 通过不同的流动性比例创造套利空间
 
-1. BankAutomation 合约部署后，需要成为 Bank 合约的管理员（admin）。
-2. Chainlink Automation 网络定期调用 `checkUpkeep` 函数检查 Bank 合约的余额是否超过设定阈值。
-3. 当余额超过阈值时，Chainlink 自动调用 `performUpkeep` 函数执行提款操作。
-4. 提款操作会将 Bank 合约中的全部资金转移到 BankAutomation 合约中，然后将一半的资金转给预设的接收地址。
+### ✅ 真实的闪电兑换
+- **跨系统套利**: 从一个系统借贷，在另一个系统交易
+- **自动计算**: 检测最优套利策略
+- **利润获取**: 扣除手续费后获得净利润
 
-## 部署步骤
+### ✅ 完整的合约实现
+- **UniswapV2Factory.sol**: 工厂合约，创建交易对
+- **UniswapV2Router.sol**: 路由合约，处理交易逻辑
+- **FlashSwapComplete.sol**: 闪电兑换合约，实现跨系统套利
 
-1. 部署 BankAutomation 合约：
+## 文件结构
 
-```bash
-forge script script/DeployBankAutomation.s.sol --rpc-url <YOUR_RPC_URL> --private-key <YOUR_PRIVATE_KEY> --broadcast
+```
+src/
+├── TokenA.sol                 # ERC20 代币 A
+├── TokenB.sol                 # ERC20 代币 B
+├── UniswapV2Factory.sol       # Uniswap V2 工厂合约
+├── UniswapV2Router.sol        # Uniswap V2 路由合约
+├── FlashSwapComplete.sol      # 完整版闪电兑换合约
+├── FlashSwapDemo.sol          # 演示版闪电兑换合约
+└── IUniswapV2.sol            # 统一接口定义
+
+script/
+├── DeployUniswapSystems.s.sol     # 部署两个 Uniswap V2 系统
+├── DeployFlashSwapComplete.s.sol  # 部署完整版闪电兑换
+├── ExecuteFlashSwapComplete.s.sol # 执行真实套利
+├── DeployTokens.s.sol             # 部署代币（备用）
+├── DeployFlashSwapDemo.s.sol      # 部署演示版合约（备用）
+└── ExecuteFlashSwapDemo.s.sol     # 执行演示（备用）
+
+test/
+└── FlashSwap.t.sol           # 合约测试
+
+docs/
+├── FLASHSWAP_GUIDE.md        # 详细部署指南（150行）
+└── QUICKSTART.md             # 快速开始指南
 ```
 
-2. 将 BankAutomation 设置为 Bank 合约的管理员：
-   - 在部署成功后，需要调用 Bank 合约的 `setAdmin` 函数，将管理员权限转移给新部署的 BankAutomation 合约。
-   - 这一步必须由当前 Bank 合约的管理员执行。
+## 快速开始
 
-3. 在 Chainlink Automation 网络注册自动化任务：
-   - 访问 [Chainlink Automation](https://automation.chain.link/) 网站
-   - 连接包含 Bank 合约的网络（如 Ethereum、Polygon 等）
-   - 注册新的自动化任务，指定 BankAutomation 合约地址
-   - 提供足够的 LINK 代币作为自动化执行的费用
+### 1. 环境设置
 
-## 配置参数
+```bash
+# 设置环境变量
+cp .env.example .env
+# 编辑 .env 文件，填入你的私钥和 RPC URLs
+```
 
-- **阈值（threshold）**：在 BankAutomation 合约中设定的触发自动提款的余额阈值，默认为 1 ETH
-- **接收地址（recipient）**：接收一半提款金额的地址
+### 2. 一键部署两个 Uniswap V2 系统
 
-## 修改配置
+```bash
+forge script script/DeployUniswapSystems.s.sol \
+  --rpc-url $SEPOLIA_RPC_URL \
+  --broadcast \
+  --verify
+```
 
-可以通过 BankAutomation 合约的以下函数修改配置：
+### 3. 部署闪电兑换合约
 
-- `setThreshold(uint256 _threshold)` - 修改触发阈值
-- `setRecipient(address _recipient)` - 修改接收地址
+```bash
+forge script script/DeployFlashSwapComplete.s.sol \
+  --rpc-url $SEPOLIA_RPC_URL \
+  --broadcast \
+  --verify
+```
 
-## 注意事项
+### 4. 执行闪电兑换套利
 
-- 只有 BankAutomation 合约的 owner（部署者）才能修改配置
-- BankAutomation 必须是 Bank 合约的管理员才能执行提款操作
-- 确保 Chainlink Automation 网络有足够的 LINK 代币来支付自动化任务的执行费用
+```bash
+forge script script/ExecuteFlashSwapComplete.s.sol \
+  --rpc-url $SEPOLIA_RPC_URL \
+  --broadcast
+```
 
-可升级的 ERC721 合约：
+## 技术实现
 
-- 实现合约地址：0x2973D6d5CA29453a61aEa85a8cBf920862d12BD6
-- 代理合约地址：0xcd1942690517Ee40383Ff884Cad2126533EC4039
+### 套利机制
 
-测试用例日志：
+1. **价差创建**：
+   - Pool A: 1 TokenA = 2 TokenB
+   - Pool B: 1 TokenA = 1.67 TokenB
+   - 价差: ~16.5%
 
-``````
-forge test test/ERC721Upgrade.t.sol -vvv
-[⠊] Compiling...
-No files changed, compilation skipped
+2. **闪电兑换流程**：
+   ```
+   1. 从 System A 借贷 1000 TokenA
+   2. 在 System B: 1000 TokenA → 1670 TokenB
+   3. 在 System B: 1670 TokenB → 1100+ TokenA  
+   4. 偿还 1003 TokenA (含0.3%手续费)
+   5. 获得 ~97 TokenA 利润
+   ```
 
-Ran 4 tests for test/ERC721Upgrade.t.sol:ERC721UpgradeTest
-[PASS] testInitialState() (gas: 30871)
-[PASS] testMinting() (gas: 160314)
-[PASS] testUpgrade() (gas: 2874417)
-[PASS] testUpgradeUnauthorized() (gas: 2615591)
-Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 2.52ms (1.05ms CPU time)
+3. **安全保障**：
+   - 权限控制（onlyOwner）
+   - 池验证（防止非法回调）
+   - 充足性检查（确保利润覆盖成本）
 
-Ran 1 test suite in 288.73ms (2.52ms CPU time): 4 tests passed, 0 failed, 0 skipped (4 total tests)
-``````
+### 合约架构
 
-可升级的 NFT 市场合约：
+```
+FlashSwapComplete
+├── executeFlashSwap()     # 主执行函数
+├── uniswapV2Call()        # Uniswap V2 回调函数
+├── checkArbitrageOpportunity() # 套利机会检测
+└── emergencyWithdraw()    # 紧急提取
 
-- 实现版本的v1地址：0x7c919e77a32e17fBd4B3Fb669498Fc7919ad6E6b
-- 代理合约地址：0x49e18f545daF02B7E786061D4ef4D561fdbBd0Db
-- 实现版本的v2地址：0x12E9a3FBFAfDc5C390727f391DE0bAe3B555a522
+UniswapV2Factory
+├── createPair()           # 创建交易对
+├── getPair()              # 获取池子地址
+└── INIT_CODE_HASH()       # 获取初始化哈希
 
-测试用例日志：
+UniswapV2Router  
+├── addLiquidity()         # 添加流动性
+├── swapExactTokensForTokens() # 精确输入交换
+└── getAmountOut()         # 计算输出数量
+```
 
-``````
-forge test test/NFTMarketUpgrade.t.sol -vvv 
-[⠒] Compiling...
-No files changed, compilation skipped
+## 验证成功
 
-Ran 2 tests for test/NFTMarketUpgrade.t.sol:NFTMarketTest
-[PASS] testListingAndBuyingNFTV1() (gas: 203267)
-[PASS] testUpgradeToV2() (gas: 1765648)
-Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 2.84ms (1.91ms CPU time)
+执行成功后，你将看到：
 
-Ran 1 test suite in 307.56ms (2.84ms CPU time): 2 tests passed, 0 failed, 0 skipped (2 total tests)
-``````
+1. **FlashSwapExecuted 事件**包含：
+   - 借贷池和套利池地址
+   - 借贷数量和实际利润
+   
+2. **代币余额增加**：
+   - Owner 账户的 TokenA 余额增加
+
+3. **交易日志**：
+   - 显示套利策略和预期利润
+
+## 详细文档
+
+- 📖 [完整部署指南](./FLASHSWAP_GUIDE.md) - 150行详细说明
+- 🚀 [快速开始指南](./QUICKSTART.md) - 核心步骤总结
+
+## 测试
+
+```bash
+# 运行测试
+forge test
+
+# 详细测试输出
+forge test -vvv
+
+# 测试特定函数
+forge test --match-test testFlashSwap
+```
+
+## 技术栈
+
+- **Solidity ^0.8.13**: 智能合约开发语言
+- **Foundry**: 开发和测试框架
+- **OpenZeppelin**: 安全的合约库
+- **Uniswap V2**: DEX 协议实现
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 许可证
+
+MIT License
 
