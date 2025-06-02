@@ -1,0 +1,124 @@
+mac@macdebijibendiannao my-foundry-project % forge test --match-path test/DAOTest.t.sol -vv
+[⠊] Compiling...
+No files changed, compilation skipped
+
+Ran 5 tests for test/DAOTest.t.sol:DAOTest
+[PASS] testCompleteDAOWorkflow() (gas: 622887)
+Logs:
+  === DAO System Deployed ===
+  VoteToken address: 0x522B3294E6d06aA25Ad0f1B8891242E335D3B459
+  Bank address: 0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1
+  Gov address: 0xc051134F56d56160E8c8ed9bB3c439c78AB27cCc
+  Bank balance: 5000000000000000000
+  User1 token balance: 10000000000000000000000
+  User2 token balance: 15000000000000000000000
+  User3 token balance: 5000000000000000000000
+  
+  === Starting Complete DAO Workflow Test ===
+  --- Step 1: Create Proposal ---
+  User1 current voting weight: 10000000000000000000000
+  Proposal created successfully!
+  Proposal ID: 1
+  Proposal description: Pay development fee to community developers
+  Withdraw amount: 1000000000000000000
+  Withdraw target: 0x0000000000000000000000000000000000000005
+  Withdraw reason: Develop new features
+  Voting start block: 2
+  Voting end block: 12
+  Current block: 1
+  
+  --- Step 2: Voting Process ---
+  Voting phase started, current block: 3
+  User1 voted: FOR, weight: 10000000000000000000000
+  User2 voted: FOR, weight: 15000000000000000000000
+  User3 voted: AGAINST, weight: 5000000000000000000000
+  Current FOR votes: 25000000000000000000000
+  Current AGAINST votes: 5000000000000000000000
+  Voting phase completed
+  
+  --- Step 3: Execute Proposal ---
+  Voting ended, current block: 18
+  Proposal current status: 3
+  Bank balance before execution: 5000000000000000000
+  Recipient balance before execution: 0
+  Bank balance after execution: 4000000000000000000
+  Recipient balance after execution: 1000000000000000000
+  Proposal executed successfully!
+  Final proposal status: 4
+  
+  === DAO Workflow Test Completed ===
+
+[PASS] testComplexVotingScenario() (gas: 459654)
+Logs:
+  === DAO System Deployed ===
+  VoteToken address: 0x522B3294E6d06aA25Ad0f1B8891242E335D3B459
+  Bank address: 0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1
+  Gov address: 0xc051134F56d56160E8c8ed9bB3c439c78AB27cCc
+  Bank balance: 5000000000000000000
+  User1 token balance: 10000000000000000000000
+  User2 token balance: 15000000000000000000000
+  User3 token balance: 5000000000000000000000
+  
+  === Testing Complex Voting Scenario ===
+  Voting weights:
+  User1: 10000000000000000000000
+  User2: 15000000000000000000000
+  User3: 5000000000000000000000
+  Final voting results:
+  FOR: 15000000000000000000000
+  AGAINST: 15000000000000000000000
+  Complex voting scenario test completed, status: 2
+  
+
+[PASS] testDefeatedProposal() (gas: 328132)
+Logs:
+  === DAO System Deployed ===
+  VoteToken address: 0x522B3294E6d06aA25Ad0f1B8891242E335D3B459
+  Bank address: 0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1
+  Gov address: 0xc051134F56d56160E8c8ed9bB3c439c78AB27cCc
+  Bank balance: 5000000000000000000
+  User1 token balance: 10000000000000000000000
+  User2 token balance: 15000000000000000000000
+  User3 token balance: 5000000000000000000000
+  
+  === Testing Failed Proposal ===
+  Failed proposal test completed, status: 2
+  
+
+[PASS] testEventLogs() (gas: 463507)
+Logs:
+  === DAO System Deployed ===
+  VoteToken address: 0x522B3294E6d06aA25Ad0f1B8891242E335D3B459
+  Bank address: 0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1
+  Gov address: 0xc051134F56d56160E8c8ed9bB3c439c78AB27cCc
+  Bank balance: 5000000000000000000
+  User1 token balance: 10000000000000000000000
+  User2 token balance: 15000000000000000000000
+  User3 token balance: 5000000000000000000000
+  
+  === Event Logs Test ===
+  ProposalCreated event triggered, log count: 1
+  VoteCast event triggered, log count: 1
+  ProposalExecuted event triggered, log count: 2
+  Event logs test completed
+  
+
+[PASS] testInsufficientVotingPower() (gas: 141832)
+Logs:
+  === DAO System Deployed ===
+  VoteToken address: 0x522B3294E6d06aA25Ad0f1B8891242E335D3B459
+  Bank address: 0x535B3D7A252fa034Ed71F0C53ec0C6F784cB64E1
+  Gov address: 0xc051134F56d56160E8c8ed9bB3c439c78AB27cCc
+  Bank balance: 5000000000000000000
+  User1 token balance: 10000000000000000000000
+  User2 token balance: 15000000000000000000000
+  User3 token balance: 5000000000000000000000
+  
+  === Testing Insufficient Voting Power ===
+  Insufficient voting power test completed
+  
+
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 2.64ms (2.63ms CPU time)
+
+Ran 1 test suite in 290.10ms (2.64ms CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)
+mac@macdebijibendiannao my-foundry-project %
