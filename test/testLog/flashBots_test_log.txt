@@ -1,0 +1,60 @@
+mac@macdebijibendiannao my-foundry-project % node flashbot_bundle.js
+✅ 初始化完成
+钱包地址: 0x3BEB31B9de61DE9ccB99c2b99426f345Df632659
+NFT合约地址: 0x6f557722765D60aaA0f668014Cb09860F8B2F47b
+🚀 开始执行Flashbot捆绑交易任务
+NaN
+✅ Flashbots provider 初始化成功
+📊 合约状态:
+- 预售是否激活: true
+- 合约owner: 0x3BEB31B9de61DE9ccB99c2b99426f345Df632659
+- 当前钱包是否为owner: true
+🔨 创建捆绑交易...
+当前区块: 8465403
+当前nonce: 86
+📝 交易详情:
+1. EnablePresale交易:
+   - Nonce: 86
+   - Gas Limit: 100000
+   - Gas Price: 0.001100016 Gwei
+2. Presale交易:
+   - Nonce: 87
+   - Gas Limit: 150000
+   - Gas Price: 0.001100016 Gwei
+   - Value: 0.01 ETH
+📦 发送Flashbot捆绑交易...
+🎯 目标区块: 8465405
+📤 Bundle已提交，等待结果...
+✅ Bundle提交成功!
+Bundle Hash: 0x54c7d3e9f5f9c068472d12ac945a11960c6acddb329ca64a2e8e61179a3d12d8
+⏳ 等待Bundle被包含在区块中...
+检查区块 8465404...
+等待下一个区块...
+检查区块 8465405...
+等待下一个区块...
+检查区块 8465406...
+等待下一个区块...
+检查区块 8465407...
+等待下一个区块...
+检查区块 8465409...
+等待下一个区块...
+⚠️ Bundle在等待时间内未被包含
+📊 获取Bundle统计信息...
+📈 Bundle统计信息:
+{
+  "isSimulated": false
+}
+NaN
+🎯 任务完成！最终结果:
+NaN
+Bundle Hash: 0x54c7d3e9f5f9c068472d12ac945a11960c6acddb329ca64a2e8e61179a3d12d8
+目标区块: 8465405
+⚠️ 交易未被包含，可能需要重试
+
+📊 Bundle统计信息:
+{
+  "isSimulated": false
+}
+
+🎉 所有任务完成!
+最终结果已保存，请查看上方输出。
