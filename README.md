@@ -1,177 +1,215 @@
-# 闪电兑换项目
+# NFT市场合约项目
 
-## 项目概述
+该项目实现了一个简单的NFT市场合约，支持NFT的上架、购买和取消上架功能。
 
-本项目在 Sepolia 测试网上实现了完整的闪电兑换（Flash Swap）功能，通过部署两个独立的 Uniswap V2 系统来创造套利机会。
+## 🎉 部署成功！
 
-## 核心特性
+合约已成功部署到Sepolia测试网，所有合约都已在Etherscan上验证：
 
-### ✅ 两个独立的 Uniswap V2 系统
-- **System A**: 独立的 Factory + Router + Pool
-- **System B**: 另一个独立的 Factory + Router + Pool
-- **价差机制**: 通过不同的流动性比例创造套利空间
+### 📍 合约地址
+- **PaymentToken (MockERC20)**: [`0x34D77710a764F02cE4cFB9dEE967fac882bf9e36`](https://sepolia.etherscan.io/address/0x34D77710a764F02cE4cFB9dEE967fac882bf9e36)
+- **NFTMarket**: [`0xEb75AEfEE879a843c5432f1d4BB86Dcae657464D`](https://sepolia.etherscan.io/address/0xEb75AEfEE879a843c5432f1d4BB86Dcae657464D)
+- **MockERC721**: [`0x14539b99c73148AB5eca3fBE239181551B8Cf6E4`](https://sepolia.etherscan.io/address/0x14539b99c73148AB5eca3fBE239181551B8Cf6E4)
+- **铸造的NFT ID**: `1`
 
-### ✅ 真实的闪电兑换
-- **跨系统套利**: 从一个系统借贷，在另一个系统交易
-- **自动计算**: 检测最优套利策略
-- **利润获取**: 扣除手续费后获得净利润
+### 🔗 快速开始操作
 
-### ✅ 完整的合约实现
-- **UniswapV2Factory.sol**: 工厂合约，创建交易对
-- **UniswapV2Router.sol**: 路由合约，处理交易逻辑
-- **FlashSwapComplete.sol**: 闪电兑换合约，实现跨系统套利
-
-## 文件结构
-
-```
-src/
-├── TokenA.sol                 # ERC20 代币 A
-├── TokenB.sol                 # ERC20 代币 B
-├── UniswapV2Factory.sol       # Uniswap V2 工厂合约
-├── UniswapV2Router.sol        # Uniswap V2 路由合约
-├── FlashSwapComplete.sol      # 完整版闪电兑换合约
-├── FlashSwapDemo.sol          # 演示版闪电兑换合约
-└── IUniswapV2.sol            # 统一接口定义
-
-script/
-├── DeployUniswapSystems.s.sol     # 部署两个 Uniswap V2 系统
-├── DeployFlashSwapComplete.s.sol  # 部署完整版闪电兑换
-├── ExecuteFlashSwapComplete.s.sol # 执行真实套利
-├── DeployTokens.s.sol             # 部署代币（备用）
-├── DeployFlashSwapDemo.s.sol      # 部署演示版合约（备用）
-└── ExecuteFlashSwapDemo.s.sol     # 执行演示（备用）
-
-test/
-└── FlashSwap.t.sol           # 合约测试
-
-docs/
-├── FLASHSWAP_GUIDE.md        # 详细部署指南（150行）
-└── QUICKSTART.md             # 快速开始指南
-```
-
-## 快速开始
-
-### 1. 环境设置
+如果你想立即开始操作，请将以下内容添加到你的`.env`文件中：
 
 ```bash
-# 设置环境变量
-cp .env.example .env
-# 编辑 .env 文件，填入你的私钥和 RPC URLs
+# 合约地址 - 已部署并验证
+PAYMENT_TOKEN_ADDRESS=0x34D77710a764F02cE4cFB9dEE967fac882bf9e36
+NFT_MARKET_ADDRESS=0xEb75AEfEE879a843c5432f1d4BB86Dcae657464D
+MOCK_NFT_ADDRESS=0x14539b99c73148AB5eca3fBE239181551B8Cf6E4
+TOKEN_ID=1
 ```
 
-### 2. 一键部署两个 Uniswap V2 系统
+然后直接运行：
+```bash
+# 上架NFT
+source .env
+forge script script/NFTMarketOperations.s.sol:NFTMarketOperations --sig "runList()" --rpc-url $SEPOLIA_RPC_URL --broadcast -vvvv
+
+# 购买NFT
+forge script script/NFTMarketOperations.s.sol:NFTMarketOperations --sig "runBuy()" --rpc-url $SEPOLIA_RPC_URL --broadcast -vvvv
+```
+
+---
+
+## 合约架构
+
+项目包含以下主要合约：
+
+1. `NFT_Market.sol` - 主要的NFT市场合约
+2. `MockERC20.sol` - 实现了扩展ERC20接口的模拟代币合约，用于支付
+3. `MockERC721.sol` - 实现了ERC721接口的模拟NFT合约，用于测试
+
+## 环境设置
+
+1. 创建`.env`文件并添加以下内容：
+
+```
+# 主账户私钥（卖家）
+PRIVATE_KEY=你的私钥
+# 买家账户私钥
+BUYER_PRIVATE_KEY=买家的私钥
+# RPC节点URL
+SEPOLIA_RPC_URL=你的Sepolia RPC URL
+# Etherscan API密钥
+ETHERSCAN_API_KEY=你的Etherscan API密钥
+```
+
+2. 安装依赖：
 
 ```bash
-forge script script/DeployUniswapSystems.s.sol \
-  --rpc-url $SEPOLIA_RPC_URL \
-  --broadcast \
-  --verify
+forge install
 ```
 
-### 3. 部署闪电兑换合约
+## 部署流程
+
+### 1. 部署合约
+
+使用以下命令部署所有合约到Sepolia测试网：
 
 ```bash
-forge script script/DeployFlashSwapComplete.s.sol \
-  --rpc-url $SEPOLIA_RPC_URL \
-  --broadcast \
-  --verify
+source .env
+forge script script/DeployNFTMarket.s.sol:DeployNFTMarket --rpc-url $SEPOLIA_RPC_URL --broadcast --verify -vvvv
 ```
 
-### 4. 执行闪电兑换套利
+部署完成后，记录下输出中的合约地址：
+- PaymentToken地址
+- NFTMarket地址
+- MockERC721地址
+- NFT的ID（通常为1）
+
+### 2. 将地址添加到环境变量
+
+将部署得到的合约地址添加到`.env`文件：
+
+```
+# 合约地址
+PAYMENT_TOKEN_ADDRESS=部署的支付代币地址
+NFT_MARKET_ADDRESS=部署的NFT市场地址
+MOCK_NFT_ADDRESS=部署的模拟NFT地址
+TOKEN_ID=铸造的NFT ID
+```
+
+### 3. 验证合约（可选）
+
+如果部署时未自动验证合约，可以使用以下命令生成验证命令：
 
 ```bash
-forge script script/ExecuteFlashSwapComplete.s.sol \
-  --rpc-url $SEPOLIA_RPC_URL \
-  --broadcast
+source .env
+forge script script/VerifyContracts.s.sol:VerifyContracts --rpc-url $SEPOLIA_RPC_URL
 ```
 
-## 技术实现
+然后执行输出的验证命令。
 
-### 套利机制
+## 操作流程
 
-1. **价差创建**：
-   - Pool A: 1 TokenA = 2 TokenB
-   - Pool B: 1 TokenA = 1.67 TokenB
-   - 价差: ~16.5%
+### 1. 上架NFT
 
-2. **闪电兑换流程**：
-   ```
-   1. 从 System A 借贷 1000 TokenA
-   2. 在 System B: 1000 TokenA → 1670 TokenB
-   3. 在 System B: 1670 TokenB → 1100+ TokenA  
-   4. 偿还 1003 TokenA (含0.3%手续费)
-   5. 获得 ~97 TokenA 利润
-   ```
-
-3. **安全保障**：
-   - 权限控制（onlyOwner）
-   - 池验证（防止非法回调）
-   - 充足性检查（确保利润覆盖成本）
-
-### 合约架构
-
-```
-FlashSwapComplete
-├── executeFlashSwap()     # 主执行函数
-├── uniswapV2Call()        # Uniswap V2 回调函数
-├── checkArbitrageOpportunity() # 套利机会检测
-└── emergencyWithdraw()    # 紧急提取
-
-UniswapV2Factory
-├── createPair()           # 创建交易对
-├── getPair()              # 获取池子地址
-└── INIT_CODE_HASH()       # 获取初始化哈希
-
-UniswapV2Router  
-├── addLiquidity()         # 添加流动性
-├── swapExactTokensForTokens() # 精确输入交换
-└── getAmountOut()         # 计算输出数量
-```
-
-## 验证成功
-
-执行成功后，你将看到：
-
-1. **FlashSwapExecuted 事件**包含：
-   - 借贷池和套利池地址
-   - 借贷数量和实际利润
-   
-2. **代币余额增加**：
-   - Owner 账户的 TokenA 余额增加
-
-3. **交易日志**：
-   - 显示套利策略和预期利润
-
-## 详细文档
-
-- 📖 [完整部署指南](./FLASHSWAP_GUIDE.md) - 150行详细说明
-- 🚀 [快速开始指南](./QUICKSTART.md) - 核心步骤总结
-
-## 测试
+使用以下命令将NFT上架到市场：
 
 ```bash
-# 运行测试
-forge test
-
-# 详细测试输出
-forge test -vvv
-
-# 测试特定函数
-forge test --match-test testFlashSwap
+source .env
+forge script script/NFTMarketOperations.s.sol:NFTMarketOperations --sig "runList()" --rpc-url $SEPOLIA_RPC_URL --broadcast -vvvv
 ```
 
-## 技术栈
+上架成功后，记录下输出中的上架ID（通常为0）。
 
-- **Solidity ^0.8.13**: 智能合约开发语言
-- **Foundry**: 开发和测试框架
-- **OpenZeppelin**: 安全的合约库
-- **Uniswap V2**: DEX 协议实现
+### 2. 购买NFT
 
-## 贡献
+有两种方式购买NFT：
 
-欢迎提交 Issue 和 Pull Request！
+**常规购买**：
 
-## 许可证
+```bash
+source .env
+forge script script/NFTMarketOperations.s.sol:NFTMarketOperations --sig "runBuy()" --rpc-url $SEPOLIA_RPC_URL --broadcast -vvvv
+```
 
-MIT License
+**使用回调购买**：
+
+```bash
+source .env
+forge script script/NFTMarketOperations.s.sol:NFTMarketOperations --sig "runBuyWithCallback()" --rpc-url $SEPOLIA_RPC_URL --broadcast -vvvv
+```
+
+## 功能说明
+
+### NFT市场合约（NFT_Market.sol）
+
+1. **上架NFT** - `list(address _nftContract, uint256 _tokenId, uint256 _price)`
+   - 将NFT上架到市场
+   - 返回上架ID
+
+2. **取消上架** - `cancelListing(uint256 _listingId)`
+   - 取消已上架的NFT
+
+3. **购买NFT** - `buyNFT(uint256 _listingId)`
+   - 购买已上架的NFT
+
+4. **带回调购买NFT** - `buyNFTWithCallback(uint256 _listingId)`
+   - 使用带回调的方式购买NFT
+
+### 支付代币合约（MockERC20.sol）
+
+1. **标准ERC20功能**
+   - 转账、授权等
+
+2. **带回调的转账功能**
+   - `transferWithCallback`
+   - `transferWithCallbackAndData`
+
+3. **铸造功能** - `mint(address account, uint256 amount)`
+   - 为测试铸造代币
+
+### 模拟NFT合约（MockERC721.sol）
+
+1. **标准ERC721功能**
+   - 转账、授权等
+
+2. **铸造功能** - `mint(address to)`
+   - 铸造新NFT并返回代币ID
+
+## 常见问题
+
+1. **交易失败**
+   - 检查账户余额和授权情况
+   - 确认上架ID正确且NFT仍处于上架状态
+
+2. **合约验证失败**
+   - 确保编译器版本正确（默认为0.8.20）
+   - 确认构造函数参数格式正确
+
+3. **账户权限问题**
+   - 确保使用了正确的私钥
+   - 检查NFT所有权和授权情况
+
+## 高级用法
+
+### 自定义上架价格
+
+修改`NFTMarketOperations.sol`中的`runList()`函数，调整价格：
+
+```solidity
+function runList() external {
+    setUp();
+    // 修改价格（例如200个代币）
+    listNFT(200 * 10**18);
+}
+```
+
+### 购买指定上架ID的NFT
+
+修改`NFTMarketOperations.sol`中的`runBuy()`函数，指定上架ID：
+
+```solidity
+function runBuy() external {
+    setUp();
+    // 修改上架ID（例如1）
+    buyNFT(1);
+}
+```
 
