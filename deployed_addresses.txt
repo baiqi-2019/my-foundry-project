@@ -1,0 +1,27 @@
+ERC20_ADDRESS=0xc98c167fCE35023F49Df4D2B6CfC00984C28f091
+TOKENBANK_ADDRESS=0x89Fa6B3fA6808d49d514906A3aA6910362a33e15
+DELEGATE_ADDRESS=0x25a2afDD33a22B9a148809367cce59EeBa484171
+
+# Deployment Summary
+# Network: Sepolia Testnet
+# Deployer: 0x3BEB31B9de61DE9ccB99c2b99426f345Df632659
+# Block: 8495150
+# Total Gas Used: 1,281,889 gas
+# Total Cost: 0.000001887675130397 ETH
+
+# Contract Details:
+# 1. BaseERC20 Token
+#    - Address: 0xc98c167fCE35023F49Df4D2B6CfC00984C28f091
+#    - Name: BaseERC20
+#    - Symbol: BERC20
+#    - Total Supply: 100,000,000 tokens (100,000,000 * 10^18 wei)
+#    - Transaction: 0x02898c5f4b04cf8e8ffcb51fcd204ee74b84c322614120224230827e3fff35e3
+
+# 2. TokenBank
+#    - Address: 0x89Fa6B3fA6808d49d514906A3aA6910362a33e15
+#    - Uses Token: 0xc98c167fCE35023F49Df4D2B6CfC00984C28f091
+#    - Transaction: 0x83f03ea51efa27cfc5bf76d685186d3b5975bd06828a2eb521764d0df352f844
+
+# 3. SimpleDelegateContract (支持批量执行)
+#    - Address: 0x25a2afDD33a22B9a148809367cce59EeBa484171
+#    - Transaction: 0xd3957c882a56c47f8ccc62067a305ae80030f3ff43ec1ffd50747e3fc523de54
